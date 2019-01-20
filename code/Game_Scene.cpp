@@ -37,6 +37,7 @@ namespace project_template
     Game_Scene::Texture_Data Game_Scene::textures_data[] =
     {
         { ID(nombre_ID),  "game-scene/nombre_archivo.extension"},
+        { ID(udder),      "game-scene/udder.png"},
 
         //...
 
@@ -50,8 +51,12 @@ namespace project_template
     // ---------------------------------------------------------------------------------------------
     // Definiciones de los atributos estáticos de la clase:
 
-    //TODO: Implementar los atributos estáticos de la clase
-    //constexpr tipo_dato Game_Scene:: nombre_variable;
+    //TODO: Implementar los atributos estáticos constantes de la clase
+    //constexpr tipo_dato Game_Scene:: nombre_variable = valor;
+
+    constexpr size_t Game_Scene:: bullet_amount = 10;
+    constexpr float  Game_Scene:: bullet_speed  = 100f;
+    constexpr float  Game_Scene:: milk_for_shot = 0.10f;
 
 
     // ---------------------------------------------------------------------------------------------
@@ -222,7 +227,7 @@ namespace project_template
         else
         if (timer.get_elapsed_seconds () > 1.f)         // Si las texturas se han cargado muy rápido
         {                                               // se espera un segundo desde el inicio de
-            create_gameobjects();                          // la carga antes de pasar al juego para que
+            create_gameobjects();                       // la carga antes de pasar al juego para que
             restart_game   ();                          // el mensaje de carga no aparezca y desaparezca
                                                         // demasiado rápido.
             state = RUNNING;
@@ -235,26 +240,54 @@ namespace project_template
     {
 
         //TODO: crear y configurar los gameobjects de la escena
-        // Se crean y configuran los gameobjects:
+        // 1) Se crean y configuran los gameobjects:
 
         //GameObject_Handle  nombre_objeto(new GameObject (textures[ID(nombre_ID)].get() ));
         //...
 
-
-        //Se establecen los anchor y position de los GameObject
-
+        // 2) Se establecen los anchor y position de los GameObject
+        // Si no se especifica se colocan por defecto en la posición (0,0) y el anchor en el centro
         //nombre_objeto->set_anchor (...);
         //nombre_objeto->set_position ({coordenada_x, coordenada_y});
 
-
-        //Se añaden a la lista de game objects
+        // 3) Se añaden a la lista de game objects
         //gameobjects.push_back (nombre_objeto);
+
+
+        // Se crean los objetos no dinámicos de la escena
+        GameObject_Handle first_udder  (new GameObject (textures[ID(udder)]. get()));
+        GameObject_Handle second_udder (new GameObject (textures[ID(udder)]. get()));
+        GameObject_Handle timer_object (new GameObject (textures[ID(timer)]. get()));
+        GameObject_Handle bucket       (new GameObject (textures[ID(bucket)].get()));
+
+        first_udder  -> set_position({(canvas_width * 0.5f) - first_udder  -> get_width() , (first_udder  -> get_height() * 0.5f)});
+        second_udder -> set_position({(canvas_width * 0.5f) + second_udder -> get_width() , (second_udder -> get_height() * 0.5f)});
+        timer_object -> set_position({(canvas_width * 0.5f) , (canvas_height - (timer_object -> get_height() * 0.5f))});
+        bucket       -> set_position({(canvas_width * 0.5f) , (canvas_height - (timer_object -> get_height() * 0.5f) - (bucket -> get_height() * 0.5f))});
+
+        gameobjects.push_back(first_udder) ;
+        gameobjects.push_back(second_udder);
+        gameobjects.push_back(bucket)      ;
+
+       // Se crean los proyectiles de leche
+        for(unsigned iterator = 0; iterator < bullet_amount; iterator++)
+        {
+            GameObject_Handle milk_bullet (new GameObject (textures[ID(bullet)]. get()));
+
+            milk_bullet -> hide ();
+
+            bullets.    push_back(milk_bullet);
+            gameobjects.push_back(milk_bullet);
+        }
 
 
 
         // Se guardan punteros a los gameobjects que se van a usar frecuentemente:
-
         // nombre_puntero = nombre_objeto.get();
+
+        first_udder_pointer  = first_udder .get();
+        second_udder_pointer = second_udder.get();
+        bucket_pointer       = bucket.      get();
 
     }
 
@@ -267,6 +300,20 @@ namespace project_template
         // TODO: resetear valores iniciales de los gameobjects que lo requieran
         //nombre_objeto->nombre_metodo(parametros);
 
+        // Reseteamos la visibilidad y posicion de todos los proyectiles
+
+        for (auto & gameobject : bullets)
+        {
+            gameobject -> set_position({0,0});
+            gameobject -> hide();
+        }
+
+        // Establecemos la posición de los spawns en función de la posición de las ubres
+
+        first_spawn_position  = {first_udder_pointer  -> get_position_x(), (first_udder_pointer  -> get_position_y() + (first_udder_pointer  -> get_height() + 0.5f))};
+        second_spawn_position = {second_udder_pointer -> get_position_x(), (second_udder_pointer -> get_position_y() + (second_udder_pointer -> get_height() + 0.5f))};
+
+
         gameplay = WAITING_TO_START;
     }
 
@@ -275,6 +322,8 @@ namespace project_template
     void Game_Scene::start_playing ()
     {
         //TODO: Implementar las cosas que se tengan que realizar al empezar a jugar
+
+        liters = 0f;
 
         gameplay = PLAYING;
     }
@@ -288,6 +337,26 @@ namespace project_template
         for (auto & gameobject : gameobjects)
         {
             gameobject->update (time);
+        }
+
+        // Comprobación de colisión de los proyectiles:
+
+        for (auto & bullet : bullets)
+        {
+            if(bullet -> is_visible())
+            {
+                // Si el proyectil ha llegado hasta el cubo,
+                // Lo hacemos invisible y reseteamos su velocidad y posición
+                // Sumamos los puntos adecuados
+
+                if( bullet -> intersects( *bucket_pointer))
+                {
+                    bullet -> hide();
+                    bullet -> set_speed({0,0});
+                    bullet -> set_position({0,0});
+                    liters += milk_for_shot;
+                }
+            }
         }
 
         //TODO: implementación de la IA
@@ -339,7 +408,7 @@ namespace project_template
         //canvas_width = unsigned( canvas_height * real_aspect_ratio );
 
         // Si se desea mantener el ancho y ajustar el alto (disposición vertical)
-        //canvas_height = unsigned ( canvas_width * real_aspect_ratio);
+        canvas_height = unsigned ( canvas_width * real_aspect_ratio);
 
         aspect_ratio_adjusted = true;
     }

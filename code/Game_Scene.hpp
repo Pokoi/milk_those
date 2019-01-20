@@ -85,10 +85,17 @@
              */
             static unsigned textures_count;
 
+            /**
+             * Cantidad de litros obtenidos por el jugador
+             */
+            static float liters;
+
         private:
 
-            static constexpr float   ball_speed = 400.f;        ///< Velocidad a la que se mueve la bola (en unideades virtuales por segundo).
-            static constexpr float player_speed = 300.f;        ///< Velocidad a la que se mueven ambos jugadores (en unideades virtuales por segundo).
+            static constexpr size_t  bullet_amount;             ///< Cantidad de proyectiles de leche
+            static constexpr float   bullet_speed;              ///< Velocidad de los proyectiles
+            static constexpr float   milk_for_shot;             ///< Cantidad de leche que proporciona un proyectil
+
 
         private:
 
@@ -101,12 +108,17 @@
             bool           aspect_ratio_adjusted;               ///< False hasta que se ajuste el aspect ratio de la resolución.
 
             Texture_Map        textures;                        ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas.
-            GameObject_List    gameobjects;                         ///< Lista en la que se guardan shared_ptr a los gameobject creados.
-
-            GameObject       * top_border;                      ///< Puntero al game object de la lista de game objects que representa el borde superior.
-            GameObject       * bottom_border;                   ///< Puntero al game object de la lista de game objects que representa el borde inferior.
+            GameObject_List    gameobjects;                     ///< Lista en la que se guardan shared_ptr a los gameobject creados.
+            GameObject_List    bullets;                         ///< Lista en la que se guardan shared_ptr a los proyectiles creados.
 
             Timer          timer;                               ///< Cronómetro usado para medir intervalos de tiempo
+            Point2f        first_spawn_position;                ///< Posición del punto de spwan de la primera ubre
+            Point2f        second_spawn_position;               ///< Posición del punto de spwan de la segunda ubre
+            unsigned       last_udder_clicked;                  ///< La última ubre pulsada por el jugador
+
+            GameObject * first_udder_pointer ;                          ///< Puntero a la primera ubre
+            GameObject * second_udder_pointer;                          ///< Puntero a la segunda ubre
+            GameObject * bucket_pointer;                                ///< Puntero al cubo
 
         public:
 

@@ -169,7 +169,7 @@
         public:
 
             /**
-             * Comprueba si el área envolvente rectangular de este sprite se solapa con la de otro.
+             * Comprueba si el área envolvente rectangular de este gameobject se solapa con la de otro.
              * @param other Referencia al otro gameobject.
              * @return true si las áreas se solapan o false en caso contrario.
              */
