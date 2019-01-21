@@ -120,6 +120,8 @@
             GameObject * second_udder_pointer;                          ///< Puntero a la segunda ubre
             GameObject * bucket_pointer;                                ///< Puntero al cubo
 
+
+
         public:
 
             /**
@@ -202,7 +204,6 @@
              */
             void run_simulation (float time);
 
-
             /**
              * Dibuja la textura con el mensaje de carga mientras el estado de la escena es LOADING.
              * La textura con el mensaje se carga la primera para mostrar el mensaje cuanto antes.
@@ -220,6 +221,12 @@
              * Ajusta el aspect ratio
              */
             void adjust_aspect_ratio(Context & context);
+
+
+            /**
+             * Spawnea un proyectil en la posición dada y se le aplica una velocidad
+             */
+            void spawn_bullet (const Point2f & point);
 
         };
 

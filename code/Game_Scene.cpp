@@ -130,6 +130,34 @@ namespace project_template
                                                *event[ID(y)].as< var::Float > ()     //Coordenada Y
                                              };
 
+                    // Si el índice es cero significa que no se ha pulsado ninguna ubre anteriormente
+
+                    if(last_udder_clicked == 0){
+
+                        if(first_udder_pointer -> contains(touch_location))
+                        {
+                            last_udder_clicked = 1;
+                            spawn_bullet(first_spawn_position);
+                        }
+
+                        else if(second_udder_pointer -> contains(touch_location))
+                        {
+                            last_udder_clicked = 2;
+                            spawn_bullet(first_spawn_position);
+                        }
+                    }
+
+                    else if(last_udder_clicked == 1 && second_udder_pointer -> contains (touch_location))
+                    {
+                        last_udder_clicked = 2;
+                        spawn_bullet(first_spawn_position);
+                    }
+                    else if(last_udder_clicked == 2 && first_udder_pointer  -> contains (touch_location))
+                    {
+                        last_udder_clicked = 1;
+                        spawn_bullet(first_spawn_position);
+                    }
+
                     break;
                 }
 
@@ -313,6 +341,8 @@ namespace project_template
         first_spawn_position  = {first_udder_pointer  -> get_position_x(), (first_udder_pointer  -> get_position_y() + (first_udder_pointer  -> get_height() + 0.5f))};
         second_spawn_position = {second_udder_pointer -> get_position_x(), (second_udder_pointer -> get_position_y() + (second_udder_pointer -> get_height() + 0.5f))};
 
+        // Reseteamos el índice de última ubre pulsada
+        last_udder_clicked = 0;
 
         gameplay = WAITING_TO_START;
     }
@@ -411,6 +441,24 @@ namespace project_template
         canvas_height = unsigned ( canvas_width * real_aspect_ratio);
 
         aspect_ratio_adjusted = true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Spawnea un proyectil en la posición dada y se le aplica una velocidad
+
+    void Game_Scene::spawn_bullet (const Point2f & point)
+    {
+        unsigned iterator;
+        for(iterator = 0; iterator < bullets.size() /* && bullets[iterator] -> is_visible */; iterator++)
+        {};
+
+        if(iterator < bullets.size())
+        {
+            //bullets[iterator] -> set_position(point);
+            //bullets[iterator] -> set_speed({0, bullet_speed});
+            //bullets[iterator] -> show();
+        }
+
     }
 
 }
