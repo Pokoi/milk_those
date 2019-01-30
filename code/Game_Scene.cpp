@@ -54,9 +54,11 @@ namespace project_template
     //TODO: Implementar los atributos estáticos constantes de la clase
     //constexpr tipo_dato Game_Scene:: nombre_variable = valor;
 
-    constexpr size_t Game_Scene:: bullet_amount = 10;
-    constexpr float  Game_Scene:: bullet_speed  = 100f;
-    constexpr float  Game_Scene:: milk_for_shot = 0.10f;
+    constexpr size_t Game_Scene:: bullet_amount;
+    constexpr float  Game_Scene:: bullet_speed;
+    constexpr float  Game_Scene:: milk_for_shot;
+    constexpr int    Game_Scene:: max_time;
+    float  Game_Scene:: liters;
 
 
     // ---------------------------------------------------------------------------------------------
@@ -67,8 +69,8 @@ namespace project_template
         // En este caso no se hace ajuste de aspect ratio, por lo que puede haber distorsión cuando
         // el aspect ratio real de la pantalla del dispositivo es distinto.
 
-        canvas_width  = 1280;
-        canvas_height =  720;
+        canvas_width  =  720;
+        canvas_height = 1280;
 
         aspect_ratio_adjusted = false;
 
@@ -119,6 +121,8 @@ namespace project_template
             {
                 start_playing ();           // Se empieza a jugar cuando el usuario toca la pantalla
                                             // por primera vez
+
+                timer.reset();
             }
             else switch (event.id)
             {
@@ -285,13 +289,11 @@ namespace project_template
         // Se crean los objetos no dinámicos de la escena
         GameObject_Handle first_udder  (new GameObject (textures[ID(udder)]. get()));
         GameObject_Handle second_udder (new GameObject (textures[ID(udder)]. get()));
-        GameObject_Handle timer_object (new GameObject (textures[ID(timer)]. get()));
         GameObject_Handle bucket       (new GameObject (textures[ID(bucket)].get()));
 
-        first_udder  -> set_position({(canvas_width * 0.5f) - first_udder  -> get_width() , (first_udder  -> get_height() * 0.5f)});
-        second_udder -> set_position({(canvas_width * 0.5f) + second_udder -> get_width() , (second_udder -> get_height() * 0.5f)});
-        timer_object -> set_position({(canvas_width * 0.5f) , (canvas_height - (timer_object -> get_height() * 0.5f))});
-        bucket       -> set_position({(canvas_width * 0.5f) , (canvas_height - (timer_object -> get_height() * 0.5f) - (bucket -> get_height() * 0.5f))});
+        first_udder  -> set_position({(canvas_width * 0.5f) - first_udder  -> get_width() , (canvas_height - first_udder  -> get_height() * 0.5f)});
+        second_udder -> set_position({(canvas_width * 0.5f) + second_udder -> get_width() , (canvas_height - second_udder -> get_height() * 0.5f)});
+        bucket       -> set_position({(canvas_width * 0.5f) , ((bucket -> get_height() * 0.5f))});
 
         gameobjects.push_back(first_udder) ;
         gameobjects.push_back(second_udder);
@@ -344,6 +346,8 @@ namespace project_template
         // Reseteamos el índice de última ubre pulsada
         last_udder_clicked = 0;
 
+        liters = 0.0f;
+
         gameplay = WAITING_TO_START;
     }
 
@@ -351,9 +355,6 @@ namespace project_template
 
     void Game_Scene::start_playing ()
     {
-        //TODO: Implementar las cosas que se tengan que realizar al empezar a jugar
-
-        liters = 0f;
 
         gameplay = PLAYING;
     }
@@ -389,9 +390,14 @@ namespace project_template
             }
         }
 
-        //TODO: implementación de la IA
+        // Comprobación de tiempo restante de la partida:
 
-        //TODO: implementación de posibles colisiones
+        if(timer.get_elapsed_seconds() >= max_time)
+        {
+            gameplay=ENDING;
+        }
+
+
     }
 
 
@@ -449,14 +455,14 @@ namespace project_template
     void Game_Scene::spawn_bullet (const Point2f & point)
     {
         unsigned iterator;
-        for(iterator = 0; iterator < bullets.size() /* && bullets[iterator] -> is_visible */; iterator++)
+        for(iterator = 0; iterator < bullets.size()  && bullets[iterator] -> is_visible(); iterator++)
         {};
 
         if(iterator < bullets.size())
         {
-            //bullets[iterator] -> set_position(point);
-            //bullets[iterator] -> set_speed({0, bullet_speed});
-            //bullets[iterator] -> show();
+            bullets[iterator] -> set_position(point);
+            bullets[iterator] -> set_speed({0, bullet_speed});
+            bullets[iterator] -> show();
         }
 
     }

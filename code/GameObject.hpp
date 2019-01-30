@@ -148,6 +148,11 @@
                 speed.coordinates.y () = new_speed_y;
             }
 
+            void set_texture (Texture_2D * _texture)
+            {
+              texture = _texture;
+            }
+
         public:
 
             /**

@@ -1,5 +1,5 @@
 /*
- * GAME SCENE
+ * MENU SCENE
  * Copyright © 2018+ Ángel Rodríguez Ballesteros
  *
  * Distributed under the Boost Software License, version  1.0
@@ -19,20 +19,21 @@
  *
  */
 
-#ifndef GAME_SCENE_HEADER
-#define GAME_SCENE_HEADER
 
-    #include <map>
-    #include <list>
-    #include <memory>
+#ifndef MENU_SCENE_HEADER
+#define MENU_SCENE_HEADER
 
-    #include <basics/Canvas>
-    #include <basics/Id>
-    #include <basics/Scene>
-    #include <basics/Texture_2D>
-    #include <basics/Timer>
+#include <map>
+#include <list>
+#include <memory>
 
-    #include "GameObject.hpp"
+#include <basics/Canvas>
+#include <basics/Id>
+#include <basics/Scene>
+#include <basics/Texture_2D>
+#include <basics/Timer>
+
+#include "GameObject.hpp"
 
     namespace project_template
     {
@@ -42,7 +43,7 @@
         using basics::Canvas;
         using basics::Texture_2D;
 
-        class Game_Scene : public basics::Scene
+        class Menu_Scene : public basics::Scene
         {
 
             // Estos typedefs pueden ayudar a hacer el código más compacto y claro:
@@ -59,26 +60,13 @@
             enum State
             {
                 LOADING,
-                RUNNING,
+                READY,
                 ERROR
             };
 
             /**
-             * Representa el estado del juego cuando el estado de la escena es RUNNING.
-             */
-            enum Gameplay_State
-            {
-                UNINITIALIZED,
-                WAITING_TO_START,
-                PLAYING,
-                ENDING,
-            };
-
-        private:
-
-            /**
-             * Array de estructuras con la información de las texturas (Id y ruta) que hay que cargar.
-             */
+            * Array de estructuras con la información de las texturas (Id y ruta) que hay que cargar.
+            */
             static struct   Texture_Data { Id id; const char * path; } textures_data[];
 
             /**
@@ -86,23 +74,10 @@
              */
             static unsigned textures_count;
 
-            /**
-             * Cantidad de litros obtenidos por el jugador
-             */
-            static float liters;
-
-        private:
-
-            static constexpr size_t  bullet_amount =    10;             ///< Cantidad de proyectiles de leche
-            static constexpr float   bullet_speed  =   100;              ///< Velocidad de los proyectiles
-            static constexpr float   milk_for_shot = 0.10f;             ///< Cantidad de leche que proporciona un proyectil
-            static constexpr int     max_time      =    60;                  ///< Cantidad máxima de segundos de partida
-
 
         private:
 
             State          state;                               ///< Estado de la escena.
-            Gameplay_State gameplay;                            ///< Estado del juego cuando la escena está RUNNING.
             bool           suspended;                           ///< true cuando la escena está en segundo plano y viceversa.
 
             unsigned       canvas_width;                        ///< Ancho de la resolución virtual usada para dibujar.
@@ -110,28 +85,17 @@
             bool           aspect_ratio_adjusted;               ///< False hasta que se ajuste el aspect ratio de la resolución.
 
             Texture_Map        textures;                        ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas.
-            GameObject_List    gameobjects;                     ///< Lista en la que se guardan shared_ptr a los gameobject creados.
-            GameObject_List    bullets;                         ///< Lista en la que se guardan shared_ptr a los proyectiles creados.
+            GameObject_List    buttons;                         ///< Lista en la que se guardan shared_ptr a los gameobject creados.
 
             Timer          timer;                               ///< Cronómetro usado para medir intervalos de tiempo
-            Point2f        first_spawn_position;                ///< Posición del punto de spwan de la primera ubre
-            Point2f        second_spawn_position;               ///< Posición del punto de spwan de la segunda ubre
-            unsigned       last_udder_clicked;                  ///< La última ubre pulsada por el jugador
 
-            GameObject * first_udder_pointer ;                          ///< Puntero a la primera ubre
-            GameObject * second_udder_pointer;                          ///< Puntero a la segunda ubre
-            GameObject * bucket_pointer;                                ///< Puntero al cubo
-            GameObject * timer_object_pointer;                          ///< Puntero al timer
-
+            GameObject *         play_button_pointer;                          ///< Puntero al botón de jugar
+            GameObject * instructions_button_pointer;                          ///< Puntero al botón de instrucciones
 
 
         public:
 
-            /**
-             * Solo inicializa los atributos que deben estar inicializados la primera vez, cuando se
-             * crea la escena desde cero.
-             */
-            Game_Scene();
+            Menu_Scene();
 
             /**
              * Este método lo llama Director para conocer la resolución virtual con la que está
@@ -152,12 +116,18 @@
             /**
              * Este método lo invoca Director automáticamente cuando el juego pasa a segundo plano.
              */
-            void suspend () override;
+            void suspend () override
+            {
+                suspended = true;
+            }
 
             /**
              * Este método lo invoca Director automáticamente cuando el juego pasa a primer plano.
              */
-            void resume () override;
+            void resume () override
+            {
+                suspended = false;
+            }
 
             /**
              * Este método se invoca automáticamente una vez por fotograma cuando se acumulan
@@ -186,49 +156,35 @@
             void load_textures ();
 
             /**
+             * Ajusta el aspect ratio al dispositivo
+             */
+            void adjust_aspect_ratio(Context & context);
+
+            /**
              * En este método se crean los gameobjects cuando termina la carga de texturas.
              */
             void create_gameobjects();
 
             /**
-             * Se llama cada vez que se debe reiniciar el juego. En concreto la primera vez y cada
-             * vez que un jugador pierde.
-             */
-            void restart_game ();
-
-            /**
-             * Cuando se ha reiniciado el juego
-             */
-            void start_playing ();
-
-            /**
-             * Actualiza el estado del juego cuando el estado de la escena es RUNNING.
-             */
+            * Actualiza el estado del juego cuando el estado de la escena es READY.
+            */
             void run_simulation (float time);
 
             /**
-             * Dibuja la textura con el mensaje de carga mientras el estado de la escena es LOADING.
-             * La textura con el mensaje se carga la primera para mostrar el mensaje cuanto antes.
-             * @param canvas Referencia al Canvas con el que dibujar la textura.
-             */
-            void render_loading (Canvas & canvas);
-
-            /**
-             * Dibuja la escena de juego cuando el estado de la escena es RUNNING.
+             * Dibuja la escena del menú cuando el estado de la escena es READY.
              * @param canvas Referencia al Canvas con el que dibujar.
              */
             void render_playfield (Canvas & canvas);
 
             /**
-             * Ajusta el aspect ratio
+             * Empieza la partida
              */
-            void adjust_aspect_ratio(Context & context);
-
+            void play ();
 
             /**
-             * Spawnea un proyectil en la posición dada y se le aplica una velocidad
+             * Muestra las instrucciones
              */
-            void spawn_bullet (const Point2f & point);
+            void show_instructions ();
 
         };
 
