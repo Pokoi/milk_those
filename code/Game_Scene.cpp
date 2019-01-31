@@ -20,6 +20,8 @@
  */
 
 #include "Game_Scene.hpp"
+#include "Menu_Scene.hpp"
+#include "Final_Scene.hpp"
 
 #include <cstdlib>
 #include <basics/Canvas>
@@ -36,10 +38,13 @@ namespace project_template
     //TODO: Implementar las texturas con su ID y ruta
     Game_Scene::Texture_Data Game_Scene::textures_data[] =
     {
-        { ID(nombre_ID),  "game-scene/nombre_archivo.extension"},
-        { ID(udder),      "game-scene/udder.png"},
+        { ID(left_udder),       "game-scene/udder_left.png"},
+        { ID(right_udder),      "game-scene/udder_right.png"},
+        { ID(bucket),           "game-scene/bucket.png"},
+        { ID(bullet),           "game-scene/bullet.png"},
+        { ID(pausa),            "game-scene/pausa-button.png"},
+        { ID(pausa_text),       "game-scene/pausa_text.png"},
 
-        //...
 
     };
 
@@ -70,9 +75,10 @@ namespace project_template
         // el aspect ratio real de la pantalla del dispositivo es distinto.
 
         canvas_width  =  720;
-        canvas_height = 1280;
+        canvas_height =  1280;
 
         aspect_ratio_adjusted = false;
+        game_paused = false;
 
 
         // Se inicia la semilla del generador de números aleatorios:
@@ -126,42 +132,62 @@ namespace project_template
             }
             else switch (event.id)
             {
-                case ID(touch-started):     // El usuario toca la pantalla
-                case ID(touch-moved):
+                case ID(touch-started):
                 {
                     //Guardamos la posición tocada por el usuario
                     Point2f touch_location = { *event[ID(x)].as< var::Float > (),    //Coordenada X
                                                *event[ID(y)].as< var::Float > ()     //Coordenada Y
-                                             };
+                    };
 
-                    // Si el índice es cero significa que no se ha pulsado ninguna ubre anteriormente
+                    if(game_paused)
+                    {
+                        //timer.resume_timer();
+                        game_paused = false;
+                        pausa_button_pointer -> show();
+                        pausa_text_pointer -> hide();
+                        pause_the_game(game_paused);
 
-                    if(last_udder_clicked == 0){
 
-                        if(first_udder_pointer -> contains(touch_location))
-                        {
+                    }
+                    else
+                    {
+
+                        //Si el índice es cero significa que no se ha pulsado ninguna ubre anteriormente
+
+                        if (last_udder_clicked == 0) {
+
+                            if (first_udder_pointer->contains(touch_location)) {
+                                last_udder_clicked = 1;
+                                spawn_bullet(first_spawn_position);
+                            } else if (second_udder_pointer->contains(touch_location)) {
+                                last_udder_clicked = 2;
+                                spawn_bullet(second_spawn_position);
+                            }
+                        } else if (last_udder_clicked == 1 &&
+                                   second_udder_pointer->contains(touch_location)) {
+                            last_udder_clicked = 2;
+                            spawn_bullet(second_spawn_position);
+                        } else if (last_udder_clicked == 2 &&
+                                   first_udder_pointer->contains(touch_location)) {
                             last_udder_clicked = 1;
                             spawn_bullet(first_spawn_position);
                         }
 
-                        else if(second_udder_pointer -> contains(touch_location))
+                        if(pausa_button_pointer->contains(touch_location))
                         {
-                            last_udder_clicked = 2;
-                            spawn_bullet(first_spawn_position);
+                            //timer.stop_timer();
+                            game_paused = true;
+                            pausa_button_pointer -> hide();
+                            pausa_text_pointer -> show();
+                            pause_the_game(game_paused);
+
                         }
                     }
 
-                    else if(last_udder_clicked == 1 && second_udder_pointer -> contains (touch_location))
-                    {
-                        last_udder_clicked = 2;
-                        spawn_bullet(first_spawn_position);
-                    }
-                    else if(last_udder_clicked == 2 && first_udder_pointer  -> contains (touch_location))
-                    {
-                        last_udder_clicked = 1;
-                        spawn_bullet(first_spawn_position);
-                    }
-
+                    break;
+                }
+                case ID(touch-moved):
+                {
                     break;
                 }
 
@@ -211,7 +237,7 @@ namespace project_template
 
                 switch (state)
                 {
-                    case LOADING: render_loading   (*canvas); break;
+                    case LOADING: ; break;
                     case RUNNING: render_playfield (*canvas); break;
                     case ERROR:   break;
                 }
@@ -256,14 +282,14 @@ namespace project_template
                 // las usarán e iniciar el juego:
             }
         }
-        else
-        if (timer.get_elapsed_seconds () > 1.f)         // Si las texturas se han cargado muy rápido
-        {                                               // se espera un segundo desde el inicio de
-            create_gameobjects();                       // la carga antes de pasar al juego para que
-            restart_game   ();                          // el mensaje de carga no aparezca y desaparezca
-                                                        // demasiado rápido.
+        else {
+
+            create_gameobjects();
+            restart_game();
+
             state = RUNNING;
         }
+
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -287,22 +313,28 @@ namespace project_template
 
 
         // Se crean los objetos no dinámicos de la escena
-        GameObject_Handle first_udder  (new GameObject (textures[ID(udder)]. get()));
-        GameObject_Handle second_udder (new GameObject (textures[ID(udder)]. get()));
-        GameObject_Handle bucket       (new GameObject (textures[ID(bucket)].get()));
+        GameObject_Handle first_udder  (new GameObject (textures[ID(left_udder)].  get(), real_aspect_ratio));
+        GameObject_Handle second_udder (new GameObject (textures[ID(right_udder)]. get(), real_aspect_ratio));
+        GameObject_Handle bucket       (new GameObject (textures[ID(bucket)].      get(), real_aspect_ratio));
+        GameObject_Handle pausa_button (new GameObject (textures[ID(pausa)].       get(), real_aspect_ratio));
+        GameObject_Handle pausa_signal (new GameObject (textures[ID(pausa_text)].  get(), real_aspect_ratio));
 
-        first_udder  -> set_position({(canvas_width * 0.5f) - first_udder  -> get_width() , (canvas_height - first_udder  -> get_height() * 0.5f)});
-        second_udder -> set_position({(canvas_width * 0.5f) + second_udder -> get_width() , (canvas_height - second_udder -> get_height() * 0.5f)});
+        first_udder  -> set_position({(canvas_width * 0.5f) - (first_udder  -> get_width() * 0.5f) , (canvas_height - first_udder  -> get_height() * 0.5f)});
+        second_udder -> set_position({(canvas_width * 0.5f) + (second_udder -> get_width() * 0.5f) , (canvas_height - second_udder -> get_height() * 0.5f)});
         bucket       -> set_position({(canvas_width * 0.5f) , ((bucket -> get_height() * 0.5f))});
+        pausa_button -> set_position({pausa_button -> get_width() * 0.5f + (pausa_button -> get_width()), (canvas_height - pausa_button -> get_height())});
+        pausa_signal -> set_position({canvas_width * 0.5f, canvas_height * 0.5f});
 
         gameobjects.push_back(first_udder) ;
         gameobjects.push_back(second_udder);
         gameobjects.push_back(bucket)      ;
+        gameobjects.push_back(pausa_button);
+        gameobjects.push_back(pausa_signal);
 
        // Se crean los proyectiles de leche
         for(unsigned iterator = 0; iterator < bullet_amount; iterator++)
         {
-            GameObject_Handle milk_bullet (new GameObject (textures[ID(bullet)]. get()));
+            GameObject_Handle milk_bullet (new GameObject (textures[ID(bullet)]. get(), real_aspect_ratio));
 
             milk_bullet -> hide ();
 
@@ -318,6 +350,8 @@ namespace project_template
         first_udder_pointer  = first_udder .get();
         second_udder_pointer = second_udder.get();
         bucket_pointer       = bucket.      get();
+        pausa_button_pointer = pausa_button.get();
+        pausa_text_pointer   = pausa_signal.get();
 
     }
 
@@ -340,13 +374,16 @@ namespace project_template
 
         // Establecemos la posición de los spawns en función de la posición de las ubres
 
-        first_spawn_position  = {first_udder_pointer  -> get_position_x(), (first_udder_pointer  -> get_position_y() + (first_udder_pointer  -> get_height() + 0.5f))};
-        second_spawn_position = {second_udder_pointer -> get_position_x(), (second_udder_pointer -> get_position_y() + (second_udder_pointer -> get_height() + 0.5f))};
+        first_spawn_position  = {first_udder_pointer  -> get_position_x(), first_udder_pointer  -> get_bottom_y()};
+        second_spawn_position = {second_udder_pointer -> get_position_x(), second_udder_pointer -> get_bottom_y()};
 
         // Reseteamos el índice de última ubre pulsada
         last_udder_clicked = 0;
 
         liters = 0.0f;
+
+        pausa_button_pointer -> show();
+        pausa_text_pointer -> hide();
 
         gameplay = WAITING_TO_START;
     }
@@ -363,38 +400,43 @@ namespace project_template
 
     void Game_Scene::run_simulation (float time)
     {
-        // Se actualiza el estado de todos los gameobjects:
 
-        for (auto & gameobject : gameobjects)
-        {
-            gameobject->update (time);
-        }
+        if(gameplay != ENDING) {
 
-        // Comprobación de colisión de los proyectiles:
+            // Se actualiza el estado de todos los gameobjects:
 
-        for (auto & bullet : bullets)
-        {
-            if(bullet -> is_visible())
-            {
-                // Si el proyectil ha llegado hasta el cubo,
-                // Lo hacemos invisible y reseteamos su velocidad y posición
-                // Sumamos los puntos adecuados
+            for (auto &gameobject : gameobjects) {
+                gameobject->update(time);
+            }
 
-                if( bullet -> intersects( *bucket_pointer))
-                {
-                    bullet -> hide();
-                    bullet -> set_speed({0,0});
-                    bullet -> set_position({0,0});
-                    liters += milk_for_shot;
+            // Comprobación de colisión de los proyectiles:
+
+            for (auto &bullet : bullets) {
+                if (bullet->is_visible()) {
+                    // Si el proyectil ha llegado hasta el cubo,
+                    // Lo hacemos invisible y reseteamos su velocidad y posición
+                    // Sumamos los puntos adecuados
+
+                    if (bullet->get_position_y() <= (0.75f * bucket_pointer->get_height())) {
+                        bullet->hide();
+                        bullet->set_speed({0, 0});
+                        bullet->set_position({0, 0});
+                        liters += milk_for_shot;
+                    }
+
                 }
             }
+
+            // Comprobación de tiempo restante de la partida:
+
+            if (timer.get_elapsed_seconds() >= max_time) {
+                gameplay = ENDING;
+            }
         }
-
-        // Comprobación de tiempo restante de la partida:
-
-        if(timer.get_elapsed_seconds() >= max_time)
+        else
         {
-            gameplay=ENDING;
+
+            director.run_scene (shared_ptr< Scene >(new Final_Scene(liters)));
         }
 
 
@@ -403,21 +445,6 @@ namespace project_template
 
     // ---------------------------------------------------------------------------------------------
 
-    void Game_Scene::render_loading (Canvas & canvas)
-    {
-        //TODO: tiene que haber alguna textura con ID loading para la carga
-        Texture_2D * loading_texture = textures[ID(loading)].get ();
-
-        if (loading_texture)
-        {
-            canvas.fill_rectangle
-            (
-                { canvas_width * .5f, canvas_height * .5f },
-                { loading_texture->get_width (), loading_texture->get_height () },
-                  loading_texture
-            );
-        }
-    }
 
     // ---------------------------------------------------------------------------------------------
     // Simplemente se dibujan todos los gameobjects que conforman la escena.
@@ -436,7 +463,7 @@ namespace project_template
     void Game_Scene::adjust_aspect_ratio(Context & context)
     {
 
-        float real_aspect_ratio = float( context->get_surface_width () ) / context->get_surface_height ();
+        real_aspect_ratio = float( context->get_surface_width () ) / context->get_surface_height ();
 
         // TODO: Elegir qué disposición se desea mantener
 
@@ -467,4 +494,22 @@ namespace project_template
 
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Pausa el juego
+
+    void Game_Scene::pause_the_game(bool paused) {
+
+            for (auto bullet: bullets){
+
+                if (bullet -> is_visible()){
+
+                    if(paused) bullet -> set_speed({0,0});
+                    else       bullet -> set_speed({0, bullet_speed});
+                    }
+            }
+
+     }
+
 }
+
+

@@ -1464,7 +1464,7 @@ static void updateHashChain(Hash* hash, size_t wpos, unsigned hashval, unsigned 
 
 /*
 LZ77-encode the data. Return value is error code. The input are raw bytes, the output
-is in the form of unsigned integers with codes representing for project_template literal bytes, or
+is in the form of unsigned integers with codes representing for example literal bytes, or
 length/distance pairs.
 It uses a hash table technique to let it encode faster. When doing LZ77 encoding, a
 sliding window (of windowsize) is used, and all past bytes in that window can be used as

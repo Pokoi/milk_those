@@ -931,8 +931,8 @@ LodePNG Documentation
   8. chunks and PNG editing
   9. compiler support
   10. examples
-   10.1. decoder C++ project_template
-   10.2. decoder C project_template
+   10.1. decoder C++ example
+   10.2. decoder C example
   11. state settings reference
   12. changes
   13. contact information
@@ -1086,7 +1086,7 @@ After decoding, this contains extra information of the PNG image, except the act
 pixels, width and height because these are already gotten directly from the decoder
 functions.
 
-It contains for project_template the original color type of the PNG image, text comments,
+It contains for example the original color type of the PNG image, text comments,
 suggested background color, etc... More details about the LodePNGInfo struct are
 at its declaration documentation.
 
@@ -1144,7 +1144,7 @@ but it's possible to choose it yourself given the right settings.
 
 The encoder will not always exactly match the LodePNGInfo struct you give,
 it tries as close as possible. Some things are ignored by the encoder. The
-encoder uses, for project_template, the following settings from it when applicable:
+encoder uses, for example, the following settings from it when applicable:
 colortype and bitdepth, text chunks, time chunk, the color key, the palette, the
 background color, the interlace method, unknown chunks, ...
 
@@ -1515,10 +1515,10 @@ try to fix it if the compiler is modern and standards complient.
 10. examples
 ------------
 
-This decoder project_template shows the most basic usage of LodePNG. More complex
+This decoder example shows the most basic usage of LodePNG. More complex
 examples can be found on the LodePNG website.
 
-10.1. decoder C++ project_template
+10.1. decoder C++ example
 -------------------------
 
 #include "lodepng.h"
@@ -1539,7 +1539,7 @@ int main(int argc, char *argv[])
   //the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
 }
 
-10.2. decoder C project_template
+10.2. decoder C example
 -----------------------
 
 #include "lodepng.h"
@@ -1723,7 +1723,7 @@ symbol.
     cleaned out code as well as making certain parts faster.
 *) 28 dec 2006: Added "Settings" to the encoder.
 *) 26 dec 2006: The encoder now does LZ77 encoding and produces much smaller files now.
-    Removed some code duplication in the decoder. Fixed little bug in an project_template.
+    Removed some code duplication in the decoder. Fixed little bug in an example.
 *) 09 dec 2006: (!) Placed output parameters of public functions as first parameter.
     Fixed a bug of the decoder with 16-bit per color.
 *) 15 okt 2006: Changed documentation structure
@@ -1736,8 +1736,8 @@ symbol.
     struct of type LodePNG::LodePNG_Info, instead of a vector, which was a bit clumsy.
 *) 28 jul 2006: Cleaned the code and added new error checks.
     Corrected terminology "deflate" into "inflate".
-*) 23 jun 2006: Added SDL project_template in the documentation in the header, this
-    project_template allows easy debugging by displaying the PNG and its transparency.
+*) 23 jun 2006: Added SDL example in the documentation in the header, this
+    example allows easy debugging by displaying the PNG and its transparency.
 *) 22 jun 2006: (!) Changed way to obtain error value. Added
     loadFile function for convenience. Made decodePNG32 faster.
 *) 21 jun 2006: (!) Changed type of info vector to unsigned.

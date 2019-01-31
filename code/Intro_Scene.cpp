@@ -22,6 +22,7 @@
 
 #include "Intro_Scene.hpp"
 #include "Menu_Scene.hpp"
+#include "Game_Scene.hpp"
 #include <basics/Canvas>
 #include <basics/Director>
 
@@ -92,7 +93,7 @@ namespace project_template
 
                     canvas->fill_rectangle
                     (
-                        { canvas_width * .5f, canvas_height * .5f },
+                        { canvas_width * 0.5f, canvas_height * 0.5f },
                         { logo_texture->get_width (), logo_texture->get_height () },
                           logo_texture. get ()
                     );
@@ -107,9 +108,15 @@ namespace project_template
 
         if (context)
         {
+
+            if(!aspect_ratio_adjusted)
+            {
+                adjust_aspect_ratio(context);
+            }
+
             // Se carga la textura del logo:
 
-            logo_texture = Texture_2D::create (0, context, "logo.png");
+            logo_texture = Texture_2D::create (0, context, "menu/milk_those_logo.png");
 
             // Se comprueba si la textura se ha podido cargar correctamente:
 

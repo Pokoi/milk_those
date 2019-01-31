@@ -47,7 +47,7 @@
              * Inicializa una nueva instancia de GameObject.
              * @param texture Puntero a la textura en la que está su imagen. No debe ser nullptr.
              */
-            GameObject(Texture_2D * texture);
+            GameObject(Texture_2D * texture, float aspect_ratio);
 
             /**
              * Destructor virtual para facilitar heredar de esta clase si fuese necesario.
@@ -213,7 +213,7 @@
             {
                 if (visible)
                 {
-                    canvas.fill_rectangle (position, size * scale, texture, anchor);
+                    canvas.fill_rectangle (position, size, texture, anchor);
                 }
             }
 

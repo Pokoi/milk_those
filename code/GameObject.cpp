@@ -16,14 +16,14 @@ using namespace basics;
 namespace project_template
 {
 
-    GameObject::GameObject(Texture_2D * texture)
+    GameObject::GameObject(Texture_2D * texture, float aspect_ratio)
     :
         texture (texture)
     {
         anchor   = basics::CENTER;
-        size     = { texture->get_width (), texture->get_height () };
         position = { 0.f, 0.f };
-        scale    = 1.f;
+        scale    = 0.3f;
+        size     = { texture->get_width () * scale , texture->get_height () * scale * aspect_ratio};
         speed    = { 0.f, 0.f };
         visible  = true;
     }

@@ -93,8 +93,8 @@
 
         private:
 
-            static constexpr size_t  bullet_amount =    10;             ///< Cantidad de proyectiles de leche
-            static constexpr float   bullet_speed  =   100;              ///< Velocidad de los proyectiles
+            static constexpr size_t  bullet_amount =    50;             ///< Cantidad de proyectiles de leche
+            static constexpr float   bullet_speed  =  -200;              ///< Velocidad de los proyectiles
             static constexpr float   milk_for_shot = 0.10f;             ///< Cantidad de leche que proporciona un proyectil
             static constexpr int     max_time      =    60;                  ///< Cantidad máxima de segundos de partida
 
@@ -104,10 +104,12 @@
             State          state;                               ///< Estado de la escena.
             Gameplay_State gameplay;                            ///< Estado del juego cuando la escena está RUNNING.
             bool           suspended;                           ///< true cuando la escena está en segundo plano y viceversa.
+            bool           game_paused;
 
             unsigned       canvas_width;                        ///< Ancho de la resolución virtual usada para dibujar.
             unsigned       canvas_height;                       ///< Alto  de la resolución virtual usada para dibujar.
             bool           aspect_ratio_adjusted;               ///< False hasta que se ajuste el aspect ratio de la resolución.
+            float          real_aspect_ratio;
 
             Texture_Map        textures;                        ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas.
             GameObject_List    gameobjects;                     ///< Lista en la que se guardan shared_ptr a los gameobject creados.
@@ -121,7 +123,8 @@
             GameObject * first_udder_pointer ;                          ///< Puntero a la primera ubre
             GameObject * second_udder_pointer;                          ///< Puntero a la segunda ubre
             GameObject * bucket_pointer;                                ///< Puntero al cubo
-            GameObject * timer_object_pointer;                          ///< Puntero al timer
+            GameObject * pausa_button_pointer;                          ///< Puntero al botón de pausa
+            GameObject * pausa_text_pointer;                            ///< Puntero al texto de pausa
 
 
 
@@ -206,12 +209,6 @@
              */
             void run_simulation (float time);
 
-            /**
-             * Dibuja la textura con el mensaje de carga mientras el estado de la escena es LOADING.
-             * La textura con el mensaje se carga la primera para mostrar el mensaje cuanto antes.
-             * @param canvas Referencia al Canvas con el que dibujar la textura.
-             */
-            void render_loading (Canvas & canvas);
 
             /**
              * Dibuja la escena de juego cuando el estado de la escena es RUNNING.
@@ -229,6 +226,13 @@
              * Spawnea un proyectil en la posición dada y se le aplica una velocidad
              */
             void spawn_bullet (const Point2f & point);
+
+            /**
+             * Método que pausa el juego
+             */
+            void pause_the_game (bool paused);
+
+
 
         };
 

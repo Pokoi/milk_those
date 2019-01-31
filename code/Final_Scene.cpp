@@ -20,8 +20,9 @@
  */
 
 
-#include "Menu_Scene.hpp"
+
 #include "Game_Scene.hpp"
+#include "Final_Scene.hpp"
 
 #include <basics/Canvas>
 #include <basics/Director>
@@ -37,13 +38,16 @@ namespace project_template
     // ID y ruta de las texturas que se deben cargar para esta escena.
 
     //TODO: Implementar las texturas con su ID y ruta
-    Menu_Scene::Texture_Data Menu_Scene::textures_data[] =
+    Final_Scene::Texture_Data Final_Scene::textures_data[] =
             {
                     //{ ID(nombre_ID),  "game-scene/nombre_archivo.extension"},
                     { ID(play_button_id),          "menu/jugar.png"},
-                    { ID(instructions_button_id),  "menu/instrucciones.png"},
-                    { ID(logo_button_id),          "menu/milk_those_logo.png"},
-                    { ID(instructions_text_id),    "menu/intrucciones-texto.png"},
+                    { ID(salir_button_id),         "final/salir.png"},
+                    { ID(zero_points_id),          "final/0-puntos.png"},
+                    { ID(one_points_id),           "final/1-punto.png"},
+                    { ID(two_points_id),           "final/2-puntos.png"},
+                    { ID(three_points_id),         "final/3-puntos.png"},
+
 
                     //...
 
@@ -52,32 +56,44 @@ namespace project_template
     // Para determinar el número de items en el array textures_data, se divide el tamaño en bytes
     // del array completo entre el tamaño en bytes de un item:
 
-    unsigned Menu_Scene::textures_count = sizeof(textures_data) / sizeof(Texture_Data);
+    unsigned Final_Scene::textures_count = sizeof(textures_data) / sizeof(Texture_Data);
 
-    Menu_Scene::Menu_Scene()
+    Final_Scene::Final_Scene()
     {
         state         = LOADING;
         suspended     = true;
         canvas_width  = 720;
         canvas_height = 1280;
 
+    }
+
+    Final_Scene::Final_Scene(float _litters)
+    {
+        state         = LOADING;
+        suspended     = true;
+        canvas_width  = 720;
+        canvas_height = 1280;
         aspect_ratio_adjusted = false;
+
+        if      (_litters < one_point_achivement)                                       points = 0;
+        else if (_litters >= one_point_achivement && _litters < two_point_achivement)   points = 1;
+        else if (_litters >= two_point_achivement && _litters < three_point_achivement) points = 2;
+        else if (_litters >= three_point_achivement)                                    points = 3;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    bool Menu_Scene::initialize ()
+    bool Final_Scene::initialize ()
     {
         state     = LOADING;
         suspended = true;
-        showing_instructions = false;
 
         return true;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    void Menu_Scene::handle (basics::Event & event)
+    void Final_Scene::handle (basics::Event & event)
     {
         if (state == READY)                     // Se descartan los eventos cuando la escena está LOADING
         {
@@ -87,20 +103,8 @@ namespace project_template
                 {
                     Point2f touch_location = { *event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
 
-
-                    if(!showing_instructions)
-                    {
-
-                        if      (play_button_pointer        ->contains(touch_location)) play();
-                        else if (instructions_button_pointer->contains(touch_location)) show_instructions(true);
-
-                    }
-
-                    else if(showing_instructions)
-                    {
-                        show_instructions(false);
-
-                    }
+                    if      (play_button_pointer         -> contains(touch_location)) play();
+                    else if (salir_button_pointer -> contains(touch_location)) director.stop();
 
                     break;
 
@@ -121,7 +125,7 @@ namespace project_template
 
     // ---------------------------------------------------------------------------------------------
 
-    void Menu_Scene::update (float time)
+    void Final_Scene::update (float time)
     {
 
         if (!suspended) switch (state)
@@ -135,7 +139,7 @@ namespace project_template
 
     // ---------------------------------------------------------------------------------------------
 
-    void Menu_Scene::render (Graphics_Context::Accessor & context)
+    void Final_Scene::render (Graphics_Context::Accessor & context)
     {
         if (!suspended)
         {
@@ -174,7 +178,7 @@ namespace project_template
     // que la carga está en curso en lugar de tener una pantalla en negro que no responde durante
     // un tiempo.
 
-    void Menu_Scene::load_textures ()
+    void Final_Scene::load_textures ()
     {
         if (textures.size () < textures_count)          // Si quedan texturas por cargar...
         {
@@ -204,14 +208,13 @@ namespace project_template
                 // las usarán e iniciar el juego:
             }
         }
-        else {
-            //if (timer.get_elapsed_seconds () > 1.f)         // Si las texturas se han cargado muy rápido
-            //{                                               // se espera un segundo desde el inicio de
+        else
+        //if (timer.get_elapsed_seconds () > 1.f)         // Si las texturas se han cargado muy rápido
+        {                                               // se espera un segundo desde el inicio de
             create_gameobjects();                       // la carga antes de pasar al juego para que
             state = READY;                              // el mensaje de carga no aparezca y desaparezca
-            // demasiado rápido.
+                                                        // demasiado rápido.
 
-            //}
         }
     }
 
@@ -219,7 +222,7 @@ namespace project_template
     // ---------------------------------------------------------------------------------------------
     // Ajusta el aspect ratio
 
-    void Menu_Scene::adjust_aspect_ratio(Context & context)
+    void Final_Scene::adjust_aspect_ratio(Context & context)
     {
 
         real_aspect_ratio = float( context->get_surface_width () ) / context->get_surface_height ();
@@ -239,7 +242,7 @@ namespace project_template
     // ---------------------------------------------------------------------------------------------
     // Crea los objetos de la escena
 
-    void Menu_Scene::create_gameobjects()
+    void Final_Scene::create_gameobjects()
     {
 
         //TODO: crear y configurar los gameobjects de la escena
@@ -259,37 +262,50 @@ namespace project_template
 
         // Se crean los objetos no dinámicos de la escena
         GameObject_Handle play_button_object         (new GameObject (textures[ID(play_button_id)]. get(), real_aspect_ratio));
-        GameObject_Handle instructions_button_object (new GameObject (textures[ID(instructions_button_id)]. get(), real_aspect_ratio));
-        GameObject_Handle logo_object                (new GameObject (textures[ID(logo_button_id)].get(), real_aspect_ratio));
-        GameObject_Handle instructions_text_object   (new GameObject (textures[ID(instructions_text_id)].get(), real_aspect_ratio));
+        GameObject_Handle salir_button_object        (new GameObject (textures[ID(salir_button_id)]. get(), real_aspect_ratio));
+        GameObject_Handle zero_points_object         (new GameObject (textures[ID(zero_points_id)].get(), real_aspect_ratio));
+        GameObject_Handle one_points_object          (new GameObject (textures[ID(one_points_id)].get(), real_aspect_ratio));
+        GameObject_Handle two_points_object          (new GameObject (textures[ID(two_points_id)].get(), real_aspect_ratio));
+        GameObject_Handle three_points_object        (new GameObject (textures[ID(three_points_id)].get(), real_aspect_ratio));
 
-        logo_object        -> set_position({(canvas_width * 0.5f), (canvas_height - (logo_object  -> get_height() * 0.5f))});
-        play_button_object -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
-        instructions_button_object        -> set_position({(canvas_width * 0.5f), ((play_button_object -> get_bottom_y()) - (instructions_button_object -> get_height() * 0.5f))});
-        instructions_text_object          -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
+
+        zero_points_object  -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
+        one_points_object   -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
+        two_points_object   -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
+        three_points_object -> set_position({(canvas_width * 0.5f), (canvas_height * 0.5f)});
+
+        play_button_object  -> set_position({(canvas_width * 0.5f), (zero_points_object -> get_bottom_y() - play_button_object  -> get_height())});
+        salir_button_object  -> set_position({(canvas_width * 0.5f),(play_button_object -> get_bottom_y() - salir_button_object -> get_height())});
 
         buttons.push_back(play_button_object);
-        buttons.push_back(logo_object);
-        buttons.push_back(instructions_button_object);
-        buttons.push_back(instructions_text_object);
-
+        buttons.push_back(salir_button_object);
+        buttons.push_back(zero_points_object);
+        buttons.push_back(one_points_object);
+        buttons.push_back(two_points_object);
+        buttons.push_back(three_points_object);
 
 
 
         // Se guardan punteros a los gameobjects que se van a usar frecuentemente:
         // nombre_puntero = nombre_objeto.get();
 
-        play_button_pointer         = play_button_object .get();
-        instructions_button_pointer = instructions_button_object.get();
-        logo_pointer                = logo_object.get();
-        instructions_text_pointer   = instructions_text_object.get();
+        play_button_pointer  = play_button_object .get();
+        salir_button_pointer = salir_button_object.get();
+        zero_points_pointer  = zero_points_object .get();
+        one_points_pointer   = one_points_object  .get();
+        two_points_pointer   = two_points_object  .get();
+        three_points_pointer = three_points_object.get();
 
-        instructions_text_pointer -> hide();
+        //Hacemos invisibles los marcadores hasta conocer la puntuación del usuario
+        zero_points_pointer  -> hide();
+        one_points_pointer   -> hide();
+        two_points_pointer   -> hide();
+        three_points_pointer -> hide();
 
     }
 
     // ---------------------------------------------------------------------------------------------
-    void Menu_Scene::run_simulation (float time)
+    void Final_Scene::run_simulation (float time)
     {
         // Se actualiza el estado de todos los gameobjects:
 
@@ -299,12 +315,21 @@ namespace project_template
         }
 
 
+            switch (points)
+            {
+                case 0: zero_points_pointer -> show(); break;
+                case 1: one_points_pointer -> show(); break;
+                case 2: two_points_pointer -> show(); break;
+                case 3: three_points_pointer -> show(); break;
+            }
+
+
     }
 
     // ---------------------------------------------------------------------------------------------
     // Simplemente se dibujan todos los gameobjects que conforman la escena.
 
-    void Menu_Scene::render_playfield (Canvas & canvas)
+    void Final_Scene::render_playfield (Canvas & canvas)
     {
         for (auto & button : buttons)
         {
@@ -317,36 +342,10 @@ namespace project_template
     // ---------------------------------------------------------------------------------------------
     // Se inicia la partida
 
-    void Menu_Scene::play() {
+    void Final_Scene::play() {
         director.run_scene (shared_ptr< Scene >(new Game_Scene));
     }
 
-    // ---------------------------------------------------------------------------------------------
-    // Se muestran las instrucciones
 
-    void Menu_Scene::show_instructions(bool _showing) {
-
-        if(!_showing)
-        {
-            showing_instructions = false;
-            instructions_text_pointer   -> hide();
-            logo_pointer                -> show();
-            instructions_button_pointer -> show();
-            play_button_pointer         -> show();
-        }
-        else if(_showing)
-        {
-            showing_instructions = true;
-
-            instructions_text_pointer   -> show();
-            logo_pointer                -> hide();
-            instructions_button_pointer -> hide();
-            play_button_pointer         -> hide();
-
-        }
-
-
-
-    }
 
 }

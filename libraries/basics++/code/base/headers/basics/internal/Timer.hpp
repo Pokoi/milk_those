@@ -29,8 +29,11 @@
         {
 
             high_resolution_clock::time_point start_time;
+            //high_resolution_clock::time_point last_seconds;
 
         public:
+
+
 
             /**
              * El constructor por defecto inicia el cronometraje, por lo que no es necesario llamar
@@ -65,6 +68,25 @@
                 )
                 .count ();
             }
+
+        /*
+            /**
+             * Para el cronómetro guardando el valor por el que va
+
+            void stop_timer()
+            {
+                last_seconds = high_resolution_clock::now();
+            }
+
+            /**
+             * Resetea el timer con el último valor que tenía antes de ser parado
+
+            void resume_timer()
+            {
+                start_time = last_seconds;
+            }
+
+         */
 
         };
 
