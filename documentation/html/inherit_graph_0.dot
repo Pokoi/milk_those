@@ -1,0 +1,16 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="Scene",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
+  Node1 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node0 [label="project_template::Final\l_Scene",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classproject__template_1_1_final___scene.html",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="project_template::Game\l_Scene",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classproject__template_1_1_game___scene.html",tooltip=" "];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="project_template::Intro\l_Scene",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classproject__template_1_1_intro___scene.html",tooltip=" "];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="project_template::Menu\l_Scene",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classproject__template_1_1_menu___scene.html",tooltip=" "];
+}
